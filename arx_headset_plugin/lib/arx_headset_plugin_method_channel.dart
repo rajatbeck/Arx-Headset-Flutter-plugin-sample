@@ -9,9 +9,25 @@ class MethodChannelArxHeadsetPlugin extends ArxHeadsetPluginPlatform {
   @visibleForTesting
   final methodChannel = const MethodChannel('arx_headset_plugin');
 
+  @visibleForTesting
+  final eventChannel = const EventChannel('arx_headset_plugin/callback');
+
+
   @override
   Future<String?> getPlatformVersion() async {
     final version = await methodChannel.invokeMethod<String>('getPlatformVersion');
     return version;
+  }
+
+  @override
+  void initService() {
+    methodChannel.invokeListMethod('initService');
+  }
+
+  @override
+  Stream<String> getPermissionDeniedEvent() {
+    return eventChannel
+        .receiveBroadcastStream()
+        .map((events) => events as String);
   }
 }

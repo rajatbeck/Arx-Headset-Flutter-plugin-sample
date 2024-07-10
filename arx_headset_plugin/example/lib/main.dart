@@ -16,35 +16,27 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
+
+  bool permissionDenied = false;
   final _arxHeadsetPlugin = ArxHeadsetPlugin();
 
   @override
   void initState() {
     super.initState();
-    initPlatformState();
+    initService();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
+  void initService() {
     try {
-      platformVersion =
-          await _arxHeadsetPlugin.getPlatformVersion() ?? 'Unknown platform version';
+      _arxHeadsetPlugin.getPermissionDeniedEvent().listen((event) {
+          setState(() {
+            permissionDenied = true;
+          });
+      });
+      _arxHeadsetPlugin.initService();
     } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
+
     }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
-    });
   }
 
   @override
@@ -55,8 +47,37 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+          child: _buildBody()
         ),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (permissionDenied) {
+      return _buildPermissionDeniedLayout();
+    } else {
+      return Text('start rendering');
+    }
+  }
+
+  Widget _buildPermissionDeniedLayout() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            'ArxHeadset Permission not given',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 20),
+          Text("Press permission button UI to give required permission"),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: null,
+            child: Text('Launch permission UI'),
+          ),
+        ],
       ),
     );
   }

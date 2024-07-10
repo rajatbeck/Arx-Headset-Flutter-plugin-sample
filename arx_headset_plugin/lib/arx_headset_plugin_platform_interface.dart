@@ -26,4 +26,12 @@ abstract class ArxHeadsetPluginPlatform extends PlatformInterface {
   Future<String?> getPlatformVersion() {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
+
+  void initService() {
+    throw UnimplementedError('initService() has not been implemented.');
+  }
+
+  Stream<String> getPermissionDeniedEvent() {
+    throw UnimplementedError('getPermissionDeniedEvent() has not been implemented.');
+  }
 }

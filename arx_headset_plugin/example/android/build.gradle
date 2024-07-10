@@ -2,7 +2,11 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        flatDir {
+            dirs project(':arx_headset_plugin').file("libs")
+        }
     }
+
 }
 
 rootProject.buildDir = "../build"

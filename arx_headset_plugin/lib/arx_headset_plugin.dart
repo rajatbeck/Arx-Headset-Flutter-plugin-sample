@@ -5,4 +5,11 @@ class ArxHeadsetPlugin {
   Future<String?> getPlatformVersion() {
     return ArxHeadsetPluginPlatform.instance.getPlatformVersion();
   }
+  void initService() {
+    ArxHeadsetPluginPlatform.instance.initService();
+  }
+
+  Stream<String> getPermissionDeniedEvent() {
+    return ArxHeadsetPluginPlatform.instance.getPermissionDeniedEvent();
+  }
 }
