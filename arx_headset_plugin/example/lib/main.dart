@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
+import 'package:fluttertoast/fluttertoast.dart';
+
 
 import 'package:flutter/services.dart';
 import 'package:arx_headset_plugin/arx_headset_plugin.dart';
+
+enum UiState {
+  ArxHeadsetConnected,
+  DeviceDisconnected,
+  DeviceError,
+  PermissionNotGiven,
+}
 
 void main() {
   runApp(const MyApp());
@@ -17,21 +25,28 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
 
-  bool permissionDenied = false;
+  UiState _uiState = UiState.DeviceDisconnected;
+  String _errorMessage = '';
   final _arxHeadsetPlugin = ArxHeadsetPlugin();
 
   @override
   void initState() {
     super.initState();
+    _uiState = UiState.DeviceDisconnected; // Initialize with a default state
+    _errorMessage = '';
     initService();
+
   }
 
   void initService() {
     try {
       _arxHeadsetPlugin.getPermissionDeniedEvent().listen((event) {
           setState(() {
-            permissionDenied = true;
+            _uiState = UiState.PermissionNotGiven;
           });
+      });
+      _arxHeadsetPlugin.getUpdateViaMessage().listen((event) {
+         _showToast(event);
       });
       _arxHeadsetPlugin.initService();
     } on PlatformException {
@@ -39,12 +54,24 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  void _showToast(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 2,
+        backgroundColor: Colors.black,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('Arx Sample App'),
         ),
         body: Center(
           child: _buildBody()
@@ -54,33 +81,87 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget _buildBody() {
-    if (permissionDenied) {
-      return _buildPermissionDeniedLayout();
-    } else {
-      return Text('start rendering');
+    switch (_uiState) {
+      case UiState.ArxHeadsetConnected:
+        return _buildConnectedView();
+      case UiState.DeviceDisconnected:
+        return _buildDisconnectedView(
+          title: 'Device Disconnected',
+          subtitle: 'Plug in the device to start the Arx Headset',
+          buttonText: 'Start Arx Headset',
+          buttonAction: () {
+            // Call your method to start the Arx Headset service
+          },
+        );
+      case UiState.DeviceError:
+        return _buildDisconnectedView(
+          title: 'Device Streaming error',
+          subtitle: _errorMessage,
+          buttonText: 'Restart Service',
+          buttonAction: () {
+            // Call your method to restart the service
+          },
+        );
+      case UiState.PermissionNotGiven:
+        return _buildDisconnectedView(
+          title: 'ArxHeadset Permission not given',
+          subtitle: 'Press permission button UI to give required permission',
+          buttonText: 'Launch Permission UI',
+          buttonAction: () {
+            _arxHeadsetPlugin.launchPermissionUi();
+          },
+        );
+      default:
+        return Center(child: CircularProgressIndicator());
     }
   }
 
-  Widget _buildPermissionDeniedLayout() {
+  Widget _buildConnectedView() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Text(
-            'ArxHeadset Permission not given',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 20),
-          Text("Press permission button UI to give required permission"),
-          SizedBox(height: 20),
+          Text('Arx Headset Connected'),
           ElevatedButton(
-            onPressed:() {
-              _arxHeadsetPlugin.launchPermissionUi();
+            onPressed: () {
+              // Call your method to stop the Arx Headset service
             },
-            child: Text('Launch permission UI'),
+            child: Text('Stop Arx Headset'),
           ),
         ],
       ),
     );
   }
+
+  void _handleUiState(UiState uiState) {
+    setState(() {
+      _uiState = uiState;
+    });
+  }
+
+  void _handleDeviceError(String errorMessage) {
+    setState(() {
+      _uiState = UiState.DeviceError;
+      _errorMessage = errorMessage;
+    });
+  }
+
+  Widget _buildDisconnectedView({String title="", String subtitle="", String buttonText="", VoidCallback? buttonAction}) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          SizedBox(height: 8),
+          Text(subtitle, style: TextStyle(fontSize: 16)),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: buttonAction,
+            child: Text(buttonText),
+          ),
+        ],
+      ),
+    );
+  }
+
 }

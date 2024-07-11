@@ -16,4 +16,8 @@ class ArxHeadsetPlugin {
   void launchPermissionUi() {
     ArxHeadsetPluginPlatform.instance.launchPermissionUi();
   }
+
+  Stream<String> getUpdateViaMessage() {
+    return ArxHeadsetPluginPlatform.instance.getUpdateViaMessage();
+  }
 }

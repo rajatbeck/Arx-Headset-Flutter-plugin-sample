@@ -12,6 +12,9 @@ class MethodChannelArxHeadsetPlugin extends ArxHeadsetPluginPlatform {
   @visibleForTesting
   final eventChannel = const EventChannel('arx_headset_plugin/callback');
 
+  @visibleForTesting
+  final toastChannel = const EventChannel('arx_headset_plugin/toast');
+
 
   @override
   Future<String?> getPlatformVersion() async {
@@ -34,5 +37,11 @@ class MethodChannelArxHeadsetPlugin extends ArxHeadsetPluginPlatform {
   @override
   void launchPermissionUi() {
     methodChannel.invokeListMethod('launchPermissionUi');
+  }
+
+  @override
+  Stream<String> getUpdateViaMessage() {
+    return toastChannel.receiveBroadcastStream()
+        .map((events) => events as String);
   }
 }

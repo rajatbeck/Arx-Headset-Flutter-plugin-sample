@@ -37,7 +37,7 @@ import com.example.arx_headset_plugin.MainActivity.Companion.USB_DISCONNECTED
 
 
 /** ArxHeadsetPlugin */
-class ArxHeadsetPlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler,
+class ArxHeadsetPlugin : FlutterPlugin, MethodCallHandler,
   ActivityAware, PluginRegistry.ActivityResultListener {
 
     companion object {
@@ -50,8 +50,10 @@ class ArxHeadsetPlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamHa
   /// when the Flutter Engine is detached from the Activity
   private lateinit var channel : MethodChannel
   private lateinit var event : EventChannel
+  private lateinit var toastEventChannel: EventChannel
   private var arxHeadsetHandler: ArxHeadsetHandler? = null
   private var onPermissionDeniedEvent: EventChannel.EventSink? = null
+  private var toastEvent: EventChannel.EventSink? = null
 
   private val startResolution = Resolution._640x480
   private var activity : Activity? = null
@@ -70,8 +72,26 @@ class ArxHeadsetPlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamHa
   override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "arx_headset_plugin")
     event = EventChannel(flutterPluginBinding.binaryMessenger, "arx_headset_plugin/callback")
+    toastEventChannel = EventChannel(flutterPluginBinding.binaryMessenger,"arx_headset_plugin/toast")
     channel.setMethodCallHandler(this)
-    event.setStreamHandler(this)
+    event.setStreamHandler(object : EventChannel.StreamHandler {
+      override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+        onPermissionDeniedEvent = events
+      }
+
+      override fun onCancel(arguments: Any?) {
+        onPermissionDeniedEvent = null
+      }
+    })
+    toastEventChannel.setStreamHandler(object : EventChannel.StreamHandler {
+      override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+        toastEvent = events
+      }
+
+      override fun onCancel(arguments: Any?) {
+        toastEvent = null
+      }
+    })
   }
 
   override fun onMethodCall(call: MethodCall, result: Result) {
@@ -90,15 +110,7 @@ class ArxHeadsetPlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamHa
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     channel.setMethodCallHandler(null)
     event.setStreamHandler(null)
-  }
-
-  override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-    println("onListen called = $arguments")
-    onPermissionDeniedEvent = events
-  }
-
-  override fun onCancel(arguments: Any?) {
-    onPermissionDeniedEvent = null
+    toastEventChannel.setStreamHandler(null)
   }
 
   // ActivityAware interface methods
@@ -133,12 +145,16 @@ class ArxHeadsetPlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamHa
         val result = data.getStringExtra(MainActivity.RESULT_TYPE)
         when (result) {
           ALL_PERMISSIONS_GRANTED -> {
-
+            startHeadsetService()
           }
-          BACK_PRESSED -> {}
-          CLOSE_APP_REQUESTED -> {}
+          BACK_PRESSED -> {
+            toastEvent?.success("Back Pressed")
+          }
+          CLOSE_APP_REQUESTED -> {
+            toastEvent?.success("Close app CTA clicked")
+          }
           USB_DISCONNECTED -> {
-
+            toastEvent?.success("Usb Disconnected")
           }
           else -> {}
         }
