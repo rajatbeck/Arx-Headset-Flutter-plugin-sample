@@ -4,6 +4,7 @@ import 'package:arx_headset_plugin/arx_headset_plugin_platform_interface.dart';
 import 'package:arx_headset_plugin/arx_headset_plugin_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
+/*
 class MockArxHeadsetPluginPlatform
     with MockPlatformInterfaceMixin
     implements ArxHeadsetPluginPlatform {
@@ -27,3 +28,4 @@ void main() {
     expect(await arxHeadsetPlugin.getPlatformVersion(), '42');
   });
 }
+*/

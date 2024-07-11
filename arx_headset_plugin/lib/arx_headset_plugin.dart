@@ -12,4 +12,8 @@ class ArxHeadsetPlugin {
   Stream<String> getPermissionDeniedEvent() {
     return ArxHeadsetPluginPlatform.instance.getPermissionDeniedEvent();
   }
+
+  void launchPermissionUi() {
+    ArxHeadsetPluginPlatform.instance.launchPermissionUi();
+  }
 }

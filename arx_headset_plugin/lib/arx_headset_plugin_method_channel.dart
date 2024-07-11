@@ -30,4 +30,9 @@ class MethodChannelArxHeadsetPlugin extends ArxHeadsetPluginPlatform {
         .receiveBroadcastStream()
         .map((events) => events as String);
   }
+
+  @override
+  void launchPermissionUi() {
+    methodChannel.invokeListMethod('launchPermissionUi');
+  }
 }

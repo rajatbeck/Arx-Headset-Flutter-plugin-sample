@@ -74,7 +74,9 @@ class _MyAppState extends State<MyApp> {
           Text("Press permission button UI to give required permission"),
           SizedBox(height: 20),
           ElevatedButton(
-            onPressed: null,
+            onPressed:() {
+              _arxHeadsetPlugin.launchPermissionUi();
+            },
             child: Text('Launch permission UI'),
           ),
         ],

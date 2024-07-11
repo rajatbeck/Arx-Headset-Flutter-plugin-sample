@@ -34,4 +34,8 @@ abstract class ArxHeadsetPluginPlatform extends PlatformInterface {
   Stream<String> getPermissionDeniedEvent() {
     throw UnimplementedError('getPermissionDeniedEvent() has not been implemented.');
   }
+
+  void launchPermissionUi() {
+    throw UnimplementedError('launchPermission() has not been implemented');
+  }
 }
