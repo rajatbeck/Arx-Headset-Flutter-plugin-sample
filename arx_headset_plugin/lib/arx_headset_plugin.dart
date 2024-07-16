@@ -5,8 +5,8 @@ class ArxHeadsetPlugin {
   Future<String?> getPlatformVersion() {
     return ArxHeadsetPluginPlatform.instance.getPlatformVersion();
   }
-  void initService() {
-    ArxHeadsetPluginPlatform.instance.initService();
+  void startArxHeadSet() {
+    ArxHeadsetPluginPlatform.instance.startArxHeadSet();
   }
 
   Stream<String> getPermissionDeniedEvent() {
@@ -19,5 +19,21 @@ class ArxHeadsetPlugin {
 
   Stream<String> getUpdateViaMessage() {
     return ArxHeadsetPluginPlatform.instance.getUpdateViaMessage();
+  }
+
+  Stream<String> getListOfResolutions() {
+    return ArxHeadsetPluginPlatform.instance.getListOfResolutions();
+  }
+
+  Stream<dynamic> getBitmapStream() {
+    return ArxHeadsetPluginPlatform.instance.getBitmapStream();
+  }
+
+  Stream<String> getImuDataStream() {
+    return ArxHeadsetPluginPlatform.instance.getImuDataStream();
+  }
+
+  Stream<String> disconnectedStream() {
+    return ArxHeadsetPluginPlatform.instance.disconnectedStream();
   }
 }

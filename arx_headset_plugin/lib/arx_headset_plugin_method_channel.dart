@@ -15,6 +15,21 @@ class MethodChannelArxHeadsetPlugin extends ArxHeadsetPluginPlatform {
   @visibleForTesting
   final toastChannel = const EventChannel('arx_headset_plugin/toast');
 
+  @visibleForTesting
+  final resolutionChannel = const EventChannel('arx_headset_plugin/resolution');
+
+
+ @visibleForTesting
+  final bitmapChannel = const EventChannel('arx_headset_plugin/bitmap');
+
+   @visibleForTesting
+  final imuChannel = const EventChannel('arx_headset_plugin/imu');
+
+   @visibleForTesting
+  final disconnectedChannel = const EventChannel('arx_headset_plugin/disconnected');
+
+
+
 
   @override
   Future<String?> getPlatformVersion() async {
@@ -23,8 +38,8 @@ class MethodChannelArxHeadsetPlugin extends ArxHeadsetPluginPlatform {
   }
 
   @override
-  void initService() {
-    methodChannel.invokeListMethod('initService');
+  void startArxHeadSet() {
+    methodChannel.invokeListMethod('startArxHeadSet');
   }
 
   @override
@@ -43,5 +58,33 @@ class MethodChannelArxHeadsetPlugin extends ArxHeadsetPluginPlatform {
   Stream<String> getUpdateViaMessage() {
     return toastChannel.receiveBroadcastStream()
         .map((events) => events as String);
+  }
+
+  @override
+  Stream<String> getListOfResolutions() {
+    return resolutionChannel
+        .receiveBroadcastStream()
+        .map((events) => events as String);
+  }
+
+  @override
+  Stream<dynamic> getBitmapStream() {
+    return bitmapChannel
+        .receiveBroadcastStream()
+        .map((events) => events as dynamic);
+  }
+
+  @override
+  Stream<String> getImuDataStream() {
+    return imuChannel
+        .receiveBroadcastStream()
+        .map((events) => events as String);
+  }
+
+  @override
+  Stream<String> disconnectedStream() {
+    return disconnectedChannel
+        .receiveBroadcastStream()
+        .map((event) => event as String);
   }
 }

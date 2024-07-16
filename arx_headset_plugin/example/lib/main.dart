@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -28,12 +29,16 @@ class _MyAppState extends State<MyApp> {
   UiState _uiState = UiState.DeviceDisconnected;
   String _errorMessage = '';
   final _arxHeadsetPlugin = ArxHeadsetPlugin();
+  Uint8List _imageData = Uint8List(0);
+  String _imuData = '';
 
   @override
   void initState() {
     super.initState();
     _uiState = UiState.DeviceDisconnected; // Initialize with a default state
     _errorMessage = '';
+    _imageData = Uint8List(0); // Initialize with an empty byte array
+    _imuData = '';
     initService();
 
   }
@@ -48,7 +53,27 @@ class _MyAppState extends State<MyApp> {
       _arxHeadsetPlugin.getUpdateViaMessage().listen((event) {
          _showToast(event);
       });
-      _arxHeadsetPlugin.initService();
+      _arxHeadsetPlugin.getListOfResolutions().listen((event){
+        setState(() {
+          _uiState = UiState.ArxHeadsetConnected;
+        });
+      });
+      _arxHeadsetPlugin.getBitmapStream().listen((dynamic event){
+        setState(() {
+          _imageData = event;
+        });
+      });
+      _arxHeadsetPlugin.getImuDataStream().listen((event) {
+        setState(() {
+          _imuData = event;
+        });
+      });
+      _arxHeadsetPlugin.disconnectedStream().listen((event) {
+        setState(() {
+          _uiState = UiState.DeviceDisconnected;
+        });
+      });
+      _arxHeadsetPlugin.startArxHeadSet();
     } on PlatformException {
 
     }
@@ -85,12 +110,13 @@ class _MyAppState extends State<MyApp> {
       case UiState.ArxHeadsetConnected:
         return _buildConnectedView();
       case UiState.DeviceDisconnected:
-        return _buildDisconnectedView(
+        return
+          _buildDisconnectedView(
           title: 'Device Disconnected',
           subtitle: 'Plug in the device to start the Arx Headset',
           buttonText: 'Start Arx Headset',
           buttonAction: () {
-            // Call your method to start the Arx Headset service
+            _arxHeadsetPlugin.startArxHeadSet();
           },
         );
       case UiState.DeviceError:
@@ -119,9 +145,32 @@ class _MyAppState extends State<MyApp> {
   Widget _buildConnectedView() {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          Text('Arx Headset Connected'),
+          AspectRatio(
+            aspectRatio: 2 / 1,
+            child: _imageData.isNotEmpty
+                ? Image.memory(
+              _imageData,
+              fit: BoxFit.cover,
+            )
+                : Container(
+              color: Colors.grey,
+              child: Center(child: Text('No Image')),
+            ),
+          ),
+          SizedBox(height: 24), // Vertical margin
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+            child: Column(children: [
+              HeadsetButtonsLayout(),
+              Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Text("$_imuData"))
+            ]),
+          ), // Added text
+          SizedBox(height: 24), // Vertical margin
           ElevatedButton(
             onPressed: () {
               // Call your method to stop the Arx Headset service
@@ -132,6 +181,78 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
+
+  Widget HeadsetButtonsLayout() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          Spacer(flex: 1),
+          Column(
+            children: <Widget>[
+              Opacity(
+                opacity: 0.2,
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  child: Center(
+                    child: Image.asset('assets/images/circle_small.png'),
+                  ),
+                ),
+              ),
+              SizedBox(height: 8), // Adjust the spacing between buttons
+              Opacity(
+                opacity: 0.2,
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  child: Center(
+                    child: Image.asset('assets/images/circle_small.png'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Spacer(flex: 1),
+          Opacity(
+            opacity: 0.2,
+            child: Container(
+              width: 50,
+              height: 50,
+              child: Center(
+                child: Image.asset('assets/images/square.png'),
+              ),
+            ),
+          ),
+          Spacer(flex: 1),
+          Opacity(
+            opacity: 0.2,
+            child: Container(
+              width: 50,
+              height: 50,
+              child: Center(
+                child: Image.asset('assets/images/circle.png'),
+              ),
+            ),
+          ),
+          Spacer(flex: 1),
+          Opacity(
+            opacity: 0.2,
+            child: Container(
+              width: 50,
+              height: 50,
+              child: Center(
+                child: Image.asset('assets/images/triangle.png'),
+              ),
+            ),
+          ),
+          Spacer(flex: 1),
+        ],
+      ),
+    );
+  }
+
 
   void _handleUiState(UiState uiState) {
     setState(() {
@@ -148,20 +269,36 @@ class _MyAppState extends State<MyApp> {
 
   Widget _buildDisconnectedView({String title="", String subtitle="", String buttonText="", VoidCallback? buttonAction}) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          SizedBox(height: 8),
-          Text(subtitle, style: TextStyle(fontSize: 16)),
-          SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: buttonAction,
-            child: Text(buttonText),
-          ),
-        ],
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16), // Add horizontal margin
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),textAlign: TextAlign.center,),
+            SizedBox(height: 8),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16), // Add horizontal padding
+              child: Text(
+                subtitle,
+                style: TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: buttonAction,
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button padding
+                backgroundColor: Colors.blue.shade900, // Background color
+                foregroundColor: Colors.white, // Text color
+              ),
+              child: Text(buttonText),
+            ),
+          ],
+        ),
       ),
     );
   }
+
 
 }

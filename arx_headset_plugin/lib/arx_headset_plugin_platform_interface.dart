@@ -27,8 +27,8 @@ abstract class ArxHeadsetPluginPlatform extends PlatformInterface {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 
-  void initService() {
-    throw UnimplementedError('initService() has not been implemented.');
+  void startArxHeadSet() {
+    throw UnimplementedError('startArxHeadSet() has not been implemented.');
   }
 
   Stream<String> getPermissionDeniedEvent() {
@@ -41,5 +41,21 @@ abstract class ArxHeadsetPluginPlatform extends PlatformInterface {
 
   Stream<String> getUpdateViaMessage() {
     throw UnimplementedError('toastEvent() has not been implemented.');
+  }
+
+  Stream<String> getListOfResolutions() {
+    throw UnimplementedError('getListOfResolutions() has not been implemented.');
+  }
+
+  Stream<dynamic> getBitmapStream() {
+    throw UnimplementedError('getBitmapStream() has not been implemented');
+  }
+
+  Stream<String> getImuDataStream() {
+    throw UnimplementedError('getImuDataStream() has not been implemented');
+  }
+
+  Stream<String> disconnectedStream() {
+    throw UnimplementedError('disconnectedStream() has not been implemented');
   }
 }
