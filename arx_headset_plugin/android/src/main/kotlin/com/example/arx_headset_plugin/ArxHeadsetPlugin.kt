@@ -29,9 +29,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 
 
 /** ArxHeadsetPlugin */
@@ -63,7 +67,11 @@ class ArxHeadsetPlugin : FlutterPlugin, MethodCallHandler,
 
   private val mainScope = CoroutineScope(Dispatchers.Main)
   private val ioScope = CoroutineScope(Dispatchers.IO)
-  private val dataFlow = MutableSharedFlow<String>(replay = 1)
+  private val imuDataFlow = MutableSharedFlow<String>(replay = 1)
+  private val byteArrayFlow =
+    MutableSharedFlow<ByteArray>(
+      replay = 1,
+      onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
 
   private val startResolution = Resolution._640x480
@@ -231,11 +239,13 @@ class ArxHeadsetPlugin : FlutterPlugin, MethodCallHandler,
         }
 
         override fun onDevicePhotoReceived(bitmap: Bitmap, currentFrameDesc: Resolution) {
-          /*val stream = ByteArrayOutputStream()
-          bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-          val byteArray = stream.toByteArray()
-          bitmapEvent?.success(byteArray)
-          bitmap.recycle()*/ // todo set up some kind of buffer
+          ioScope.launch {
+            val stream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+            val byteArray = stream.toByteArray()
+            byteArrayFlow.emit(byteArray)
+            bitmap.recycle()
+          }
         }
 
         override fun onStillPhotoReceived(bitmap: Bitmap, currentFrameDesc: Resolution) {
@@ -252,7 +262,7 @@ class ArxHeadsetPlugin : FlutterPlugin, MethodCallHandler,
 
         override fun onImuDataUpdate(imuData: ImuData) {
           ioScope.launch {
-             dataFlow.emit(imuData.toString())
+             imuDataFlow.emit(imuData.toString())
           }
 
         }
@@ -271,8 +281,14 @@ class ArxHeadsetPlugin : FlutterPlugin, MethodCallHandler,
 
   private fun startListening() {
     mainScope.launch {
-      dataFlow.collect { data ->
+      imuDataFlow.collect { data ->
         imuEvent?.success(data)
+      }
+    }
+    mainScope.launch {
+      byteArrayFlow
+        .collectLatest { data ->
+        bitmapEvent?.success(data)
       }
     }
   }

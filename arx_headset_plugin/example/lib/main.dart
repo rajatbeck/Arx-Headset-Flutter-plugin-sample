@@ -60,7 +60,7 @@ class _MyAppState extends State<MyApp> {
       });
       _arxHeadsetPlugin.getBitmapStream().listen((dynamic event){
         setState(() {
-          _imageData = event;
+          _imageData = Uint8List.fromList(event);
         });
       });
       _arxHeadsetPlugin.getImuDataStream().listen((event) {
@@ -151,9 +151,11 @@ class _MyAppState extends State<MyApp> {
             aspectRatio: 2 / 1,
             child: _imageData.isNotEmpty
                 ? Image.memory(
-              _imageData,
-              fit: BoxFit.cover,
-            )
+                    _imageData,
+                    width: 200,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  )
                 : Container(
               color: Colors.grey,
               child: Center(child: Text('No Image')),
