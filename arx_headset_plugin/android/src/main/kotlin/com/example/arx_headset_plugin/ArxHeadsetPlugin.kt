@@ -261,7 +261,20 @@ class ArxHeadsetPlugin : FlutterPlugin, MethodCallHandler,
         }
 
         override fun onButtonClicked(arxButton: ArxHeadsetButton, isLongPress: Boolean) {
-          toastEvent?.success("arx button clicked")
+          val message = when {
+            (arxButton == ArxHeadsetButton.VolumeUp && isLongPress) -> "Volume up button long pressed"
+            (arxButton == ArxHeadsetButton.VolumeUp) -> "Volume up button short pressed"
+            (arxButton == ArxHeadsetButton.VolumeDown && isLongPress) -> "Volume down button long pressed"
+            (arxButton == ArxHeadsetButton.VolumeDown) -> "Volume down button short pressed"
+            (arxButton == ArxHeadsetButton.Square && isLongPress) -> "Square button long pressed"
+            (arxButton == ArxHeadsetButton.Square) -> "Square button short pressed"
+            (arxButton == ArxHeadsetButton.Circle && isLongPress) -> "Circle button long pressed"
+            (arxButton == ArxHeadsetButton.Circle) -> "Circle button short pressed"
+            (arxButton == ArxHeadsetButton.Triangle && isLongPress) -> "Triangle button long pressed"
+            (arxButton == ArxHeadsetButton.Triangle) -> "Triangle button short pressed"
+            else -> ""
+          }
+          toastEvent?.success(message)
         }
 
         override fun onPermissionDenied() {
