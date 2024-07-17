@@ -65,4 +65,4 @@ If you would like to contribute to this project, please follow these steps:
 
 ## Demo Video
 
-[Attach your demo video here]
+[![Demo Video](https://raw.githubusercontent.com/rajatbeck/Arx-Headset-Flutter-plugin-sample/main/Screen_Recording_20240718)](https://raw.githubusercontent.com/rajatbeck/Arx-Headset-Flutter-plugin-sample/main/Screen_Recording_20240718)
