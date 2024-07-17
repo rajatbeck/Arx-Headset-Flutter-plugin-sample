@@ -65,4 +65,7 @@ If you would like to contribute to this project, please follow these steps:
 
 ## Demo Video
 
-[![Demo Video](https://raw.githubusercontent.com/rajatbeck/Arx-Headset-Flutter-plugin-sample/main/Screen_Recording_20240718)](https://raw.githubusercontent.com/rajatbeck/Arx-Headset-Flutter-plugin-sample/main/Screen_Recording_20240718)
+To view a demo of the application, click the link below:
+
+
+[![Demo Video](https://github.com/rajatbeck/Arx-Headset-Flutter-plugin-sample/blob/main/arx_headset_plugin/Screen_Recording_20240718-012629.mp4)](https://github.com/rajatbeck/Arx-Headset-Flutter-plugin-sample/blob/main/arx_headset_plugin/Screen_Recording_20240718-012629.mp4)
