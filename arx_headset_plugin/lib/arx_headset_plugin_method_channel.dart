@@ -54,6 +54,12 @@ class MethodChannelArxHeadsetPlugin extends ArxHeadsetPluginPlatform {
     methodChannel.invokeListMethod('launchPermissionUi');
   }
 
+
+  @override
+  void stopArxHeadset() {
+    methodChannel.invokeListMethod('stopArxHeadset');
+  }
+
   @override
   Stream<String> getUpdateViaMessage() {
     return toastChannel.receiveBroadcastStream()

@@ -39,6 +39,10 @@ abstract class ArxHeadsetPluginPlatform extends PlatformInterface {
     throw UnimplementedError('launchPermission() has not been implemented');
   }
 
+  void stopArxHeadset() {
+    throw UnimplementedError('stopArxHeadset() has not been implemented');
+  }
+
   Stream<String> getUpdateViaMessage() {
     throw UnimplementedError('toastEvent() has not been implemented.');
   }

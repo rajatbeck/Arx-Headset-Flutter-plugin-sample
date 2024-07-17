@@ -17,6 +17,10 @@ class ArxHeadsetPlugin {
     ArxHeadsetPluginPlatform.instance.launchPermissionUi();
   }
 
+  void stopArxHeadset() {
+    ArxHeadsetPluginPlatform.instance.stopArxHeadset();
+  }
+
   Stream<String> getUpdateViaMessage() {
     return ArxHeadsetPluginPlatform.instance.getUpdateViaMessage();
   }

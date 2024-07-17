@@ -1,7 +1,5 @@
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-
 
 import 'package:flutter/services.dart';
 import 'package:arx_headset_plugin/arx_headset_plugin.dart';
@@ -25,7 +23,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   UiState _uiState = UiState.DeviceDisconnected;
   String _errorMessage = '';
   final _arxHeadsetPlugin = ArxHeadsetPlugin();
@@ -40,25 +37,24 @@ class _MyAppState extends State<MyApp> {
     _imageData = Uint8List(0); // Initialize with an empty byte array
     _imuData = '';
     initService();
-
   }
 
   void initService() {
     try {
       _arxHeadsetPlugin.getPermissionDeniedEvent().listen((event) {
-          setState(() {
-            _uiState = UiState.PermissionNotGiven;
-          });
+        setState(() {
+          _uiState = UiState.PermissionNotGiven;
+        });
       });
       _arxHeadsetPlugin.getUpdateViaMessage().listen((event) {
-         _showToast(event);
+        _showToast(event);
       });
-      _arxHeadsetPlugin.getListOfResolutions().listen((event){
+      _arxHeadsetPlugin.getListOfResolutions().listen((event) {
         setState(() {
           _uiState = UiState.ArxHeadsetConnected;
         });
       });
-      _arxHeadsetPlugin.getBitmapStream().listen((dynamic event){
+      _arxHeadsetPlugin.getBitmapStream().listen((dynamic event) {
         setState(() {
           _imageData = Uint8List.fromList(event);
         });
@@ -74,9 +70,7 @@ class _MyAppState extends State<MyApp> {
         });
       });
       _arxHeadsetPlugin.startArxHeadSet();
-    } on PlatformException {
-
-    }
+    } on PlatformException {}
   }
 
   void _showToast(String message) {
@@ -87,8 +81,7 @@ class _MyAppState extends State<MyApp> {
         timeInSecForIosWeb: 2,
         backgroundColor: Colors.black,
         textColor: Colors.white,
-        fontSize: 16.0
-    );
+        fontSize: 16.0);
   }
 
   @override
@@ -98,9 +91,7 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Arx Sample App'),
         ),
-        body: Center(
-          child: _buildBody()
-        ),
+        body: Center(child: _buildBody()),
       ),
     );
   }
@@ -110,8 +101,7 @@ class _MyAppState extends State<MyApp> {
       case UiState.ArxHeadsetConnected:
         return _buildConnectedView();
       case UiState.DeviceDisconnected:
-        return
-          _buildDisconnectedView(
+        return _buildDisconnectedView(
           title: 'Device Disconnected',
           subtitle: 'Plug in the device to start the Arx Headset',
           buttonText: 'Start Arx Headset',
@@ -143,44 +133,52 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget _buildConnectedView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          AspectRatio(
-            aspectRatio: 2 / 1,
-            child: _imageData.isNotEmpty
-                ? Image.memory(
-                    _imageData,
-                    width: 200,
-                    height: 100,
-                    fit: BoxFit.cover,
-                  )
-                : Container(
-              color: Colors.grey,
-              child: Center(child: Text('No Image')),
-            ),
-          ),
-          SizedBox(height: 24), // Vertical margin
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-            child: Column(children: [
-              HeadsetButtonsLayout(),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              AspectRatio(
+                aspectRatio: 2 / 1,
+                child: _imageData.isNotEmpty
+                    ? Image.memory(
+                        _imageData,
+                        width: 200,
+                        height: 100,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        color: Colors.grey,
+                        child: Center(child: Text('No Image')),
+                      ),
+              ),
+              SizedBox(height: 24), // Vertical margin
               Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: Text("$_imuData"))
-            ]),
-          ), // Added text
-          SizedBox(height: 24), // Vertical margin
-          ElevatedButton(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 16.0, horizontal: 16.0),
+                child: Column(children: [
+                  HeadsetButtonsLayout(),
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: Text("$_imuData"))
+                ]),
+              ), // Added text
+              Spacer(), // This pushes the button to the bottom
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton(
             onPressed: () {
-              // Call your method to stop the Arx Headset service
+              _arxHeadsetPlugin.stopArxHeadset();
             },
             child: Text('Stop Arx Headset'),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -188,73 +186,54 @@ class _MyAppState extends State<MyApp> {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           Spacer(flex: 1),
           Column(
             children: <Widget>[
-              Opacity(
-                opacity: 0.2,
-                child: Container(
-                  width: 30,
-                  height: 30,
-                  child: Center(
-                    child: Image.asset('assets/images/circle_small.png'),
-                  ),
+              Container(
+                child: Center(
+                  child: Image.asset('assets/images/circle_small.png',
+                      color: Color(0xff280D78), width: 64, height: 64),
                 ),
               ),
               SizedBox(height: 8), // Adjust the spacing between buttons
-              Opacity(
-                opacity: 0.2,
-                child: Container(
-                  width: 30,
-                  height: 30,
-                  child: Center(
-                    child: Image.asset('assets/images/circle_small.png'),
+              Container(
+                child: Center(
+                  child: Image.asset(
+                    'assets/images/circle_small.png',
+                    color: Color(0xff280D78),
+                    width: 64,
+                    height: 64,
                   ),
                 ),
               ),
             ],
           ),
           Spacer(flex: 1),
-          Opacity(
-            opacity: 0.2,
-            child: Container(
-              width: 50,
-              height: 50,
-              child: Center(
-                child: Image.asset('assets/images/square.png'),
-              ),
+          Container(
+            child: Center(
+              child: Image.asset('assets/images/square.png',
+                  color: Color(0xff280D78), width: 64, height: 64),
             ),
           ),
           Spacer(flex: 1),
-          Opacity(
-            opacity: 0.2,
-            child: Container(
-              width: 50,
-              height: 50,
-              child: Center(
-                child: Image.asset('assets/images/circle.png'),
-              ),
+          Container(
+            child: Center(
+              child: Image.asset('assets/images/circle.png',
+                  color: Color(0xff280D78), width: 64, height: 64),
             ),
           ),
           Spacer(flex: 1),
-          Opacity(
-            opacity: 0.2,
-            child: Container(
-              width: 50,
-              height: 50,
-              child: Center(
-                child: Image.asset('assets/images/triangle.png'),
-              ),
+          Container(
+            child: Center(
+              child: Image.asset('assets/images/triangle.png',
+                  color: Color(0xff280D78), width: 64, height: 64),
             ),
           ),
-          Spacer(flex: 1),
         ],
       ),
     );
   }
-
 
   void _handleUiState(UiState uiState) {
     setState(() {
@@ -269,17 +248,26 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  Widget _buildDisconnectedView({String title="", String subtitle="", String buttonText="", VoidCallback? buttonAction}) {
+  Widget _buildDisconnectedView(
+      {String title = "",
+      String subtitle = "",
+      String buttonText = "",
+      VoidCallback? buttonAction}) {
     return Center(
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 16), // Add horizontal margin
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),textAlign: TextAlign.center,),
+            Text(
+              title,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
             SizedBox(height: 8),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16), // Add horizontal padding
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              // Add horizontal padding
               child: Text(
                 subtitle,
                 style: TextStyle(fontSize: 16),
@@ -290,8 +278,10 @@ class _MyAppState extends State<MyApp> {
             ElevatedButton(
               onPressed: buttonAction,
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16), // Button padding
-                backgroundColor: Colors.blue.shade900, // Background color
+                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                // Button padding
+                backgroundColor: Colors.blue.shade900,
+                // Background color
                 foregroundColor: Colors.white, // Text color
               ),
               child: Text(buttonText),
@@ -301,6 +291,4 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
-
-
 }

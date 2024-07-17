@@ -152,15 +152,23 @@ class ArxHeadsetPlugin : FlutterPlugin, MethodCallHandler,
   }
 
   override fun onMethodCall(call: MethodCall, result: Result) {
-    if (call.method == "getPlatformVersion") {
-      result.success("Android ${android.os.Build.VERSION.RELEASE}")
-    } else if (call.method == "startArxHeadSet") {
-      startHeadsetService()
-    } else if(call.method == "launchPermissionUi") {
-      val intent = Intent(activity,MainActivity::class.java)
-      activity?.startActivityForResult(intent, REQUEST_CODE)
-    } else {
-      result.notImplemented()
+    when (call.method) {
+        "getPlatformVersion" -> {
+          result.success("Android ${android.os.Build.VERSION.RELEASE}")
+        }
+        "startArxHeadSet" -> {
+          startHeadsetService()
+        }
+        "launchPermissionUi" -> {
+          val intent = Intent(activity,MainActivity::class.java)
+          activity?.startActivityForResult(intent, REQUEST_CODE)
+        }
+        "stopArxHeadset" -> {
+          arxHeadsetHandler?.stopHeadsetService()
+        }
+        else -> {
+          result.notImplemented()
+        }
     }
   }
 
