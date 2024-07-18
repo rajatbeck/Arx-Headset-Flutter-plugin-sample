@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import 'dart:ui' as ui;
+import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:arx_headset_plugin/arx_headset_plugin.dart';
+
 
 enum UiState {
   ArxHeadsetConnected,
@@ -26,15 +31,21 @@ class _MyAppState extends State<MyApp> {
   UiState _uiState = UiState.DeviceDisconnected;
   String _errorMessage = '';
   final _arxHeadsetPlugin = ArxHeadsetPlugin();
-  Uint8List _imageData = Uint8List(0);
   String _imuData = '';
+  final StreamController<ui.Image> _imageController = StreamController<ui.Image>();
+  Stream<ui.Image> get _imageStream => _imageController.stream;
+
+  @override
+  void dispose() {
+    _imageController.close();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
     _uiState = UiState.DeviceDisconnected; // Initialize with a default state
     _errorMessage = '';
-    _imageData = Uint8List(0); // Initialize with an empty byte array
     _imuData = '';
     initService();
   }
@@ -54,10 +65,10 @@ class _MyAppState extends State<MyApp> {
           _uiState = UiState.ArxHeadsetConnected;
         });
       });
-      _arxHeadsetPlugin.getBitmapStream().listen((dynamic event) {
-        setState(() {
-          _imageData = Uint8List.fromList(event);
-        });
+      _arxHeadsetPlugin.getBitmapStream().listen((dynamic event) async {
+        final Uint8List imageData = Uint8List.fromList(event);
+        final ui.Image image = await decodeImage(imageData);
+        _imageController.add(image);
       });
       _arxHeadsetPlugin.getImuDataStream().listen((event) {
         setState(() {
@@ -71,6 +82,14 @@ class _MyAppState extends State<MyApp> {
       });
       _arxHeadsetPlugin.startArxHeadSet();
     } on PlatformException {}
+  }
+
+  Future<ui.Image> decodeImage(Uint8List data) async {
+    final Completer<ui.Image> completer = Completer();
+    ui.decodeImageFromList(data, (ui.Image img) {
+      completer.complete(img);
+    });
+    return completer.future;
   }
 
   void _showToast(String message) {
@@ -142,17 +161,26 @@ class _MyAppState extends State<MyApp> {
             children: <Widget>[
               AspectRatio(
                 aspectRatio: 2 / 1,
-                child: _imageData.isNotEmpty
-                    ? Image.memory(
-                        _imageData,
-                        width: 200,
-                        height: 100,
-                        fit: BoxFit.cover,
-                      )
-                    : Container(
+                child: StreamBuilder<ui.Image>(
+                  stream: _imageStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData) {
+                      return Container(
                         color: Colors.grey,
                         child: Center(child: Text('No Image')),
-                      ),
+                      );
+                    } else {
+                      return CustomPaint(
+                        painter: ImagePainter(snapshot.data!),
+                        child: Container(),
+                      );
+                    }
+                  },
+                ),
               ),
               SizedBox(height: 24), // Vertical margin
               Padding(
@@ -291,4 +319,25 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
+
+
 }
+
+class ImagePainter extends CustomPainter {
+  final ui.Image image;
+
+  ImagePainter(this.image);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Draw the image on the canvas
+    paintImage(canvas: canvas, rect: Offset.zero & size, image: image);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
+  }
+}
+
+
